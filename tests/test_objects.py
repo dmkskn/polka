@@ -7,6 +7,7 @@ BOOK_ID = 523
 BOOK_TITLE = "Герой нашего времени"
 BOOK_AUTHORS = ["Михаил Лермонтов"]
 PUNDIT_ID = 312
+COMPILATION_ID = 85
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +36,20 @@ def pundit():
 @pytest.fixture
 def empty_pundit():
     return polka.Pundit(PUNDIT_ID)
+
+
+@pytest.fixture(scope="module")
+def compilation():
+    comp = polka.Compilation(COMPILATION_ID)
+    comps = polka.rawlists()
+    comp.rawdata.update([c for c in comps if c["id"] == COMPILATION_ID][0])
+    comp.rawdata.update(polka.rawlist(COMPILATION_ID))
+    return comp
+
+
+@pytest.fixture
+def empty_list():
+    return polka.Compilation(COMPILATION_ID)
 
 
 def test_book_loads_data(empty_book: polka.Book):
@@ -126,3 +141,40 @@ def test_pundit_favorites_attr(pundit: polka.Pundit):
     assert isinstance(pundit.favorites, list)
     if pundit.favorites:
         assert isinstance(pundit.favorites[0], pundit.Book)
+
+
+def test_compilation_loads_data(empty_list: polka.Compilation):
+    assert empty_list._n_requests == 0
+    empty_list.title
+    empty_list.description
+    empty_list.books
+    assert empty_list._n_requests == 1
+    empty_list.short_description
+    empty_list.max_year
+    empty_list.min_year
+    assert empty_list._n_requests == 2
+
+
+def test_compilation_title_attr(compilation: polka.Compilation):
+    assert isinstance(compilation.title, str)
+
+
+def test_compilation_description_attr(compilation: polka.Compilation):
+    assert isinstance(compilation.description, str)
+
+
+def test_compilation_short_description_attr(compilation: polka.Compilation):
+    assert isinstance(compilation.short_description, str)
+
+
+def test_compilation_max_year_attr(compilation: polka.Compilation):
+    assert isinstance(compilation.max_year, int)
+
+
+def test_compilation_min_year_attr(compilation: polka.Compilation):
+    assert isinstance(compilation.min_year, int)
+
+
+def test_compilation_books_attr(compilation: polka.Compilation):
+    assert isinstance(compilation.books, list)
+    assert isinstance(compilation.books[0], polka.Book)

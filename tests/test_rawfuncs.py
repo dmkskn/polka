@@ -19,5 +19,17 @@ def test_rawlists():
     assert isinstance(polka.rawlists(), list)
 
 
+def test_rawlist():
+    assert isinstance(polka.rawlist(85), dict)
+
+
 def test_rawpundits():
     assert isinstance(polka.rawpundits(), list)
+
+
+def test_rawpunditposts():
+    assert isinstance(polka.rawpunditposts(312), list)
+
+
+def test_rawpunditfavs():
+    assert isinstance(polka.rawpunditfavs(312), list)

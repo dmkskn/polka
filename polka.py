@@ -12,6 +12,7 @@ _BOOKS = f"{_BASE}books?"
 _POST = f"{_BASE}posts/{{post_id}}"
 _SEARCH = f"{_BASE}search?"
 _LISTS = f"{_BASE}compilations"
+_LIST_POST = f"{_BASE}compilations/{{post_id}}"
 _PEOPLE = f"{_BASE}people?"
 _PEOPLE_POST = f"{_BASE}people/{{post_id}}/posts"
 _PEOPLE_FAVS = f"{_BASE}people/{{post_id}}/favs"
@@ -32,6 +33,7 @@ def _clean_text(text):
     text = re.sub(_HTMLTAG, "", text)
     text = unescape(text)
     text = text.replace("\xa0", " ")
+    text = text.strip()
     return text
 
 
@@ -54,6 +56,10 @@ def rawsearch(query):
 
 def rawlists():
     return _get(_LISTS)["compilations"]
+
+
+def rawlist(list_id):
+    return _get(_LIST_POST.format(post_id=list_id))
 
 
 def rawpundits(type_="all"):
@@ -89,6 +95,14 @@ def pundits(type_="all"):
     return pundits
 
 
+def lists():
+    """Returns a list of `Compilation` instances."""
+    lists = []
+    for data in rawlists():
+        lists.append(Compilation(data["id"], rawdata=data))
+    return lists
+
+
 class Book:
     """Represents a book."""
 
@@ -103,10 +117,31 @@ class Book:
         if key not in self.rawdata:
             if key == "author" and "authors" in self.rawdata:
                 key = "authors"
+            elif key == "date_start":
+                if "start_year" in self.rawdata:
+                    key = "start_year"
+                elif "year" in self.rawdata:
+                    key = "year"
+                else:
+                    data = rawbook(self.id)
+                    self.rawdata.update(data)
+                    self._n_requests += 1
+            elif key == "date_end":
+                if "end_year" in self.rawdata:
+                    key = "start_year"
+                else:
+                    data = rawbook(self.id)
+                    self.rawdata.update(data)
+                    self._n_requests += 1
+            elif key == "lead" and "description" in self.rawdata:
+                key = "description"
             elif key == "importance" and self.has_article:
                 Book._importance = _importance()
                 self._n_requests += 1
                 self.rawdata.update({"importance": Book._importance[self.id]})
+            elif key == "compilations" and self.has_article:
+                data = [b for b in rawbooks() if b["id"] == self.id][0]
+                self.rawdata.update(data)
             elif self.has_article:
                 data = rawbook(self.id)
                 self.rawdata.update(data)
@@ -169,6 +204,13 @@ class Book:
     def sources(self):
         sources = self._getdata("list")
         return [s["title"] for s in sources] if sources else sources
+
+    @property
+    def in_lists(self):
+        lists = []
+        for data in self._getdata("compilations"):
+            lists.append(Compilation(data["id"], rawdata=data))
+        return lists
 
     def __repr__(self):
         return (
@@ -245,7 +287,60 @@ class Pundit:
 
 
 class Compilation:
-    pass
+    """Represents a compilation"""
+
+    def __init__(self, id: int, *, rawdata: dict = {}):
+        self.id = id
+        self.rawdata = rawdata
+        self._n_requests = 0
+
+    def _getdata(self, key):
+        if key not in self.rawdata:
+            if key in ["short_desc", "max_year", "min_year"]:
+                compilation = [c for c in rawlists() if c["id"] == self.id][0]
+                self.rawdata.update(compilation)
+            else:
+                self.rawdata.update(rawlist(self.id))
+            self._n_requests += 1
+        return self.rawdata.get(key)
+
+    @property
+    def title(self):
+        return self._getdata("title")
+
+    @property
+    def description(self):
+        return self._getdata("description")
+
+    @property
+    def short_description(self):
+        return self._getdata("short_desc")
+
+    @property
+    def max_year(self):
+        return int(self._getdata("max_year"))
+
+    @property
+    def min_year(self):
+        return int(self._getdata("min_year"))
+
+    @property
+    def books(self):
+        books = []
+        for data in self._getdata("books"):
+            books.append(Book(data["id"], rawdata=data))
+        return books
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(title={self.title!r})"
+
+    def __eq__(self, other):
+        if other.__class__ is self.__class__:
+            return (self.id, self.title) == (other.id, other.title)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self.id, self.title))
 
 
 class Year(NamedTuple):
