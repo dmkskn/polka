@@ -135,6 +135,12 @@ class Book:
                     self._n_requests += 1
             elif key == "lead" and "description" in self.rawdata:
                 key = "description"
+            elif key == "lead" and not self.has_article and self.in_lists:
+                books = rawlist(self.in_lists[0].id)["books"]
+                data = [d for d in books if d["id"] == self.id][0]
+                self.rawdata.update(data)
+                self._n_requests += 1
+                key = "description"
             elif key == "importance" and self.has_article:
                 Book._importance = _importance()
                 self._n_requests += 1
