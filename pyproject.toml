@@ -1,12 +1,26 @@
 [tool.poetry]
 name = "polka"
-version = "0.1.0"
-description = "Модуль для доступа к API проекта «Полка» (https://polka.academy/)."
-authors = ["dmkskn <dmksknn@gmail.com>"]
+version = "1.0.0"
+description = "A module provides access to the public Polka API. (https://polka.academy/)."
+authors = ["Dima Koskin <dmksknn@gmail.com>"]
 license = "MIT"
+readme = "README.md"
+
+homepage = "https://github.com/dmkskn/polka/"
+
+keywords = ["polka", "books", "russian", "api"]
+
+classifiers = [
+    "Topic :: Software Development :: Libraries",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3 :: Only",
+]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.1"

@@ -1,0 +1,25 @@
+language: python
+python:
+- 3.6
+cache:
+  pip: true
+  directories:
+  - "$HOME/.cache/pypoetry"
+install:
+- curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+- source $HOME/.poetry/env
+- poetry install
+- poetry build
+script:
+- black --check polka.py tests/
+- pytest --exitfirst tests/
+deploy:
+  on:
+    tags: true
+  provider: script
+  skip_cleanup: true
+  script: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
+env:
+  global:
+  - secure: lmmcaobBrCry5Cw27Oo+zSGZ6DGTGStc+Oq3+LX2r+jOe8QO1lORVc/3JVHTPcR8TYyAYDfqrcHHVPGeCC3I2G9HDX7/+B4df1yxD3rCQ5x6X9IMdg7nwisBvCKSMFFmbgBQ34rt6RIYdaDTdw+PRMpzr67W0/LiiJA+nNmuhEPhOta2L4q9c2ZKRRkMTs5IwJMTtrx8VHNKagjNbij41Lm9eCd+KOXQgeG72w83xxPq8T8n9/HF/AgrFOwWnBX03LJjcrm+FbYyA0IMTIevLbDPCOUTAYu6SexnUiSeRiaFTiLB0xH4+Uu0ac4EdtrzmNmjq8gmwWZvXpwtZZIFqGYt1tC2P3uuo+wTwdLwarVFVX5n2NzrBUVKYaVC3HwM4ChdWvRM9gRLYPup12pwmusWOytLbOEaBlh/fNKtzGkvHcm8FsL/KctGypKm4/QBqfgg/Snjh/Fp3hKIErgNv8L7U/RtPAFYk2EwB1v/Jqqagqn4LOwRSUnEXuldDJaPAvHus8mqOQGaMNfe+1wLhcjULuf2kTEVjs0CGcUoKnl5ecUcN/OdpOdSzCriFvWn+LMPSvqsP4qdh8AHT38b/XhgXvQyfd38yoQhj7W0Uh2RGXzqSVsJT4VIzc2NGS0SVK5tFaZvfT8EzJfbSSMAHYiINJt7Ju3cIBn+pUigq0M=
+  - secure: LG61icXh5IJoq9IDl+ezrTodwgRHyZK3Ig0Oco4lY1IJLx9YIzNIW5jSLREgJpC1nX1OoDMo4T496CNMABlUF5KF8wD1DSZ4z0cBHaGdkGgGRUbPXGCTPjPGPQKS7FNcnA0eZXXOLcMWLbNiwM7D5w3rLSH0SHfFMiPngg42mugHvyORMk+xFz1KndlpgTMtGc0ymsQ1H5Fn1IOKEwzvJO+WKmXx6t50rQeKx0nqp/vsTBcO0L5bZbBRoELpAKQPOPz2qEnVLRcWikHlCDTv3KlPdjpFYjDVBtOLt1dGE3Tq/5jpGzVA1S/fp5CJKUorjH80cF0mkiYgyCPTy9pYOwM44EyaIrOchZfd2na2XaziOyOyu0NpCsi+OK17RLhkD2BTj1/Zma6PoYK6Icm/5+NlECTKuGrZByJXHsOiwbH1J003o9Cy7x1j6uTJSTtMs90XfjwOvlLVvtjK3mB4twwOJS9s6lPfTaDkSDGQeLjCdEGvp1j2ktfeym+0wLMdX3yvn5PWWASiAb8M/yHUSTvfDKXtrsuwz7slzN7XW2JSLzuni1SbQcm+akQvVrovuWFJquYcG1voSvTS/DOAPrxOs9Q0S8qSYORKZjjiO3+krnoDXm+SMPDev1I1Lyz/oRMoyHQgx49/IKT5nX8s+sB0h2iIegwO4+pd+sTR48s=
