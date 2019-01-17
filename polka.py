@@ -7,6 +7,23 @@ from urllib.request import urlopen
 from html import unescape
 
 
+__all__ = [
+    "rawbooks",
+    "rawbook",
+    "rawsearch",
+    "rawlists",
+    "rawlist",
+    "rawpundits",
+    "rawpunditposts",
+    "rawpunditfavs",
+    "books",
+    "pundits",
+    "lists",
+    "Book",
+    "Pundit",
+    "Compilation",
+]
+
 _BASE = "https://api.polka.academy/"
 _BOOKS = f"{_BASE}books?"
 _POST = f"{_BASE}posts/{{post_id}}"
@@ -21,6 +38,10 @@ _PEOPLE_FAVS = f"{_BASE}people/{{post_id}}/favs"
 _NOTES = re.compile(r"\{([^\|]*)\s*\|\s*([^\}]*)\}")
 _SOURCES = re.compile(r"\[([^\|]*)\s*\|\s*(\d+)\s*\|([^\]]*)\]")
 _HTMLTAG = re.compile(r"<\s*[^>]*>")
+
+
+def __dir__():
+    return sorted(__all__)
 
 
 def _get(url, **params):
@@ -38,12 +59,12 @@ def _clean_text(text):
 
 
 def _importance():
-    return {b["id"]: b["importance"] for b in rawbooks()}
+    return {b["id"]: b["importance"] for b in rawbooks()["books"]}
 
 
 def rawbooks(sort_column="rating", sort_direction="desc"):
     params = {"sort_column": sort_column, "sort_direction": sort_direction}
-    return _get(_BOOKS, **params)["books"]
+    return _get(_BOOKS, **params)
 
 
 def rawbook(book_id):
@@ -55,7 +76,7 @@ def rawsearch(query):
 
 
 def rawlists():
-    return _get(_LISTS)["compilations"]
+    return _get(_LISTS)
 
 
 def rawlist(list_id):
@@ -64,15 +85,15 @@ def rawlist(list_id):
 
 def rawpundits(type_="all"):
     # type = "all" or "authors" or "experts"
-    return _get(_PEOPLE, **{"type": type_})["people"]
+    return _get(_PEOPLE, **{"type": type_})
 
 
 def rawpunditposts(pundit_id):
-    return _get(_PEOPLE_POST.format(post_id=pundit_id))["books"]
+    return _get(_PEOPLE_POST.format(post_id=pundit_id))
 
 
 def rawpunditfavs(pundit_id):
-    return _get(_PEOPLE_FAVS.format(post_id=pundit_id))["books"]
+    return _get(_PEOPLE_FAVS.format(post_id=pundit_id))
 
 
 def books(sort_column="rating", sort_direction="desc"):
@@ -81,7 +102,7 @@ def books(sort_column="rating", sort_direction="desc"):
     "title" and "authors". Valid values for `sort_direction` are
     "desc" (default) and "asc"."""
     books = []
-    for data in rawbooks(sort_column, sort_direction):
+    for data in rawbooks(sort_column, sort_direction)["books"]:
         books.append(Book(data["id"], rawdata=data))
     return books
 
@@ -90,7 +111,7 @@ def pundits(type_="all"):
     """Returns a list of `Pundit` instances. Valid values for
     `type_` are "all" (default), "authors" and "experts"."""
     pundits = []
-    for data in rawpundits(type_):
+    for data in rawpundits(type_)["people"]:
         pundits.append(Pundit(data["id"], rawdata=data))
     return pundits
 
@@ -98,7 +119,7 @@ def pundits(type_="all"):
 def lists():
     """Returns a list of `Compilation` instances."""
     lists = []
-    for data in rawlists():
+    for data in rawlists()["compilations"]:
         lists.append(Compilation(data["id"], rawdata=data))
     return lists
 
@@ -146,7 +167,8 @@ class Book:
                 self._n_requests += 1
                 self.rawdata.update({"importance": Book._importance[self.id]})
             elif key == "compilations" and self.has_article:
-                data = [b for b in rawbooks() if b["id"] == self.id][0]
+                books = rawbooks()["books"]
+                data = [b for b in books if b["id"] == self.id][0]
                 self.rawdata.update(data)
             elif self.has_article:
                 data = rawbook(self.id)
@@ -170,7 +192,6 @@ class Book:
 
     @property
     def description(self):
-        # TODO: add description for books that has not article. (from compilations)
         lead = self._getdata("lead")
         return _clean_text(lead) if lead is not None else lead
 
@@ -249,11 +270,14 @@ class Pundit:
     def _getdata(self, key):
         if key not in self.rawdata:
             if key == "posts":
-                self.rawdata.update({"posts": rawpunditposts(self.id)})
+                posts = rawpunditposts(self.id)["books"]
+                self.rawdata.update({"posts": posts})
             elif key == "favs":
-                self.rawdata.update({"favs": rawpunditfavs(self.id)})
+                favs = rawpunditfavs(self.id)["books"]
+                self.rawdata.update({"favs": favs})
             else:
-                data = [p for p in rawpundits() if p["id"] == self.id][0]
+                people = rawpundits()["people"]
+                data = [p for p in people if p["id"] == self.id][0]
                 self.rawdata.update(data)
             self._n_requests += 1
         return self.rawdata.get(key)
@@ -303,8 +327,9 @@ class Compilation:
     def _getdata(self, key):
         if key not in self.rawdata:
             if key in ["short_desc", "max_year", "min_year"]:
-                compilation = [c for c in rawlists() if c["id"] == self.id][0]
-                self.rawdata.update(compilation)
+                compilations = rawlists()["compilations"]
+                data = [c for c in compilations if c["id"] == self.id][0]
+                self.rawdata.update(data)
             else:
                 self.rawdata.update(rawlist(self.id))
             self._n_requests += 1

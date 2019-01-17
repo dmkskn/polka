@@ -4,7 +4,7 @@ import polka
 
 
 def test_rawbooks():
-    assert isinstance(polka.rawbooks(), list)
+    assert isinstance(polka.rawbooks(), dict)
 
 
 def test_rawbook():
@@ -16,7 +16,7 @@ def test_rawsearch():
 
 
 def test_rawlists():
-    assert isinstance(polka.rawlists(), list)
+    assert isinstance(polka.rawlists(), dict)
 
 
 def test_rawlist():
@@ -24,12 +24,12 @@ def test_rawlist():
 
 
 def test_rawpundits():
-    assert isinstance(polka.rawpundits(), list)
+    assert isinstance(polka.rawpundits(), dict)
 
 
 def test_rawpunditposts():
-    assert isinstance(polka.rawpunditposts(312), list)
+    assert isinstance(polka.rawpunditposts(312), dict)
 
 
 def test_rawpunditfavs():
-    assert isinstance(polka.rawpunditfavs(312), list)
+    assert isinstance(polka.rawpunditfavs(312), dict)

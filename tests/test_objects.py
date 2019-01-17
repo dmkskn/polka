@@ -26,10 +26,10 @@ def empty_book():
 @pytest.fixture(scope="module")
 def pundit():
     pundit = polka.Pundit(PUNDIT_ID)
-    pundits = polka.rawpundits()
+    pundits = polka.rawpundits()["people"]
     pundit.rawdata.update([p for p in pundits if p["id"] == PUNDIT_ID][0])
-    pundit.rawdata.update({"posts": polka.rawpunditposts(PUNDIT_ID)})
-    pundit.rawdata.update({"favs": polka.rawpunditfavs(PUNDIT_ID)})
+    pundit.rawdata.update({"posts": polka.rawpunditposts(PUNDIT_ID)["books"]})
+    pundit.rawdata.update({"favs": polka.rawpunditfavs(PUNDIT_ID)["books"]})
     return pundit
 
 
@@ -41,7 +41,7 @@ def empty_pundit():
 @pytest.fixture(scope="module")
 def compilation():
     comp = polka.Compilation(COMPILATION_ID)
-    comps = polka.rawlists()
+    comps = polka.rawlists()["compilations"]
     comp.rawdata.update([c for c in comps if c["id"] == COMPILATION_ID][0])
     comp.rawdata.update(polka.rawlist(COMPILATION_ID))
     return comp
