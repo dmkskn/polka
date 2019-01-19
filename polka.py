@@ -1,10 +1,10 @@
-"""A module provides access to the public polka.academy API."""
+"""A module provides access to the public polka.academy API.bo"""
 import json
 import re
+from html import unescape
 from typing import NamedTuple, Optional
 from urllib.parse import urlencode
 from urllib.request import urlopen
-from html import unescape
 
 
 __all__ = [
@@ -85,7 +85,6 @@ def rawlist(list_id):
 
 
 def rawpundits(type_="all"):
-    # type = "all" or "authors" or "experts"
     return _get(_PEOPLE, **{"type": type_})
 
 
@@ -201,8 +200,7 @@ class Book:
 
     @property
     def title(self):
-        title = self._getdata("title")
-        return _clean_text(title)
+        return _clean_text(self._getdata("title"))
 
     @property
     def authors(self):
@@ -263,18 +261,18 @@ class Book:
             f"(title={self.title!r}, authors={self.authors!r})"
         )
 
-    # def __eq__(self, other):
-    #     if other.__class__ is self.__class__:
-    #         return (self.id, self.title) == (other.id, other.title)
-    #     return NotImplemented
+    def __eq__(self, other):
+        if other.__class__ is self.__class__:
+            return (self.id, self.title) == (other.id, other.title)
+        return NotImplemented
 
-    # def __lt__(self, other):
-    #     if other.__class__ is self.__class__:
-    #         return self.importance < other.importance
-    #     return NotImplemented
+    def __lt__(self, other):
+        if other.__class__ is self.__class__:
+            return self.importance < other.importance
+        return NotImplemented
 
-    # def __hash__(self):
-    #     return hash((self.id, self.title))
+    def __hash__(self):
+        return hash((self.id, self.title))
 
 
 class Pundit:
@@ -302,7 +300,9 @@ class Pundit:
 
     @property
     def name(self):
-        return f"{self._getdata('first')} {self._getdata('last')}"
+        first = self._getdata("first").strip()
+        last = self._getdata("last").strip()
+        return f"{first} {last}"
 
     @property
     def credit(self):
@@ -359,11 +359,11 @@ class Compilation:
 
     @property
     def description(self):
-        return self._getdata("description")
+        return _clean_text(self._getdata("description"))
 
     @property
     def short_description(self):
-        return self._getdata("short_desc")
+        return _clean_text(self._getdata("short_desc"))
 
     @property
     def max_year(self):
