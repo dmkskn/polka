@@ -19,3 +19,12 @@ def test_lists():
     lists = polka.lists()
     assert isinstance(lists, list)
     assert isinstance(lists[0], polka.Compilation)
+
+
+def test_search():
+    results = polka.search("грибоедов")
+    objects = (polka.Book, polka.Compilation, polka.Pundit)
+    assert isinstance(results, list)
+    for result in results:
+        assert isinstance(result, tuple)
+        assert isinstance(result[2], objects)

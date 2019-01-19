@@ -19,6 +19,7 @@ __all__ = [
     "books",
     "pundits",
     "lists",
+    "search",
     "Book",
     "Pundit",
     "Compilation",
@@ -124,14 +125,31 @@ def lists():
     return lists
 
 
+def search(query):
+    """Looks for a `query` and returns a list of 3-tuples like
+    `(title, description, object)`."""
+    results = []
+    for item in rawsearch(query):
+        category = item["category"]
+        description = _clean_text(item["desc"])
+        if category == "articles":
+            Object = Book
+        elif category == "lists":
+            Object = Compilation
+        elif category == "experts":
+            Object = Pundit
+        results.append((item["title"], description, Object(item["id"])))
+    return results
+
+
 class Book:
     """Represents a book."""
 
     _importance = {}
 
-    def __init__(self, id: Optional[int], *, rawdata: dict = {}):
+    def __init__(self, id: Optional[int], *, rawdata=None):
         self.id = id
-        self.rawdata = rawdata
+        self.rawdata = rawdata if rawdata is not None else {}
         self._n_requests = 0
 
     def _getdata(self, key):
@@ -245,26 +263,26 @@ class Book:
             f"(title={self.title!r}, authors={self.authors!r})"
         )
 
-    def __eq__(self, other):
-        if other.__class__ is self.__class__:
-            return (self.id, self.title) == (other.id, other.title)
-        return NotImplemented
+    # def __eq__(self, other):
+    #     if other.__class__ is self.__class__:
+    #         return (self.id, self.title) == (other.id, other.title)
+    #     return NotImplemented
 
-    def __lt__(self, other):
-        if other.__class__ is self.__class__:
-            return self.importance < other.importance
-        return NotImplemented
+    # def __lt__(self, other):
+    #     if other.__class__ is self.__class__:
+    #         return self.importance < other.importance
+    #     return NotImplemented
 
-    def __hash__(self):
-        return hash((self.id, self.title))
+    # def __hash__(self):
+    #     return hash((self.id, self.title))
 
 
 class Pundit:
     "Represents an expert."
 
-    def __init__(self, id: int, *, rawdata: dict = {}):
+    def __init__(self, id: int, *, rawdata=None):
         self.id = id
-        self.rawdata = rawdata
+        self.rawdata = rawdata if rawdata is not None else {}
         self._n_requests = 0
 
     def _getdata(self, key):
@@ -319,9 +337,9 @@ class Pundit:
 class Compilation:
     """Represents a compilation"""
 
-    def __init__(self, id: int, *, rawdata: dict = {}):
+    def __init__(self, id: int, *, rawdata=None):
         self.id = id
-        self.rawdata = rawdata
+        self.rawdata = rawdata if rawdata is not None else {}
         self._n_requests = 0
 
     def _getdata(self, key):
