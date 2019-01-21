@@ -23,6 +23,11 @@ def empty_book():
     return polka.Book(BOOK_ID)
 
 
+@pytest.fixture
+def book_without_article():
+    return [book for book in polka.books() if not book.has_article][0]
+
+
 @pytest.fixture(scope="module")
 def pundit():
     pundit = polka.Pundit(PUNDIT_ID)
@@ -96,13 +101,26 @@ def test_book_has_article_attr(book: polka.Book):
     assert isinstance(book.has_article, bool)
 
 
-def test_book_question_attr(book: polka.Book):
+def test_book_questions_attr(book: polka.Book):
     assert isinstance(book.questions, list)
-    for item in book.questions:
-        assert isinstance(item, polka.Question)
-        assert isinstance(item.question, str)
-        assert isinstance(item.answer, str)
-        assert isinstance(item.answer_with_notes, str)
+    if book.questions:
+        for item in book.questions:
+            assert isinstance(item, polka.Question)
+            assert isinstance(item.question, str)
+            assert isinstance(item.answer, str)
+            assert isinstance(item.answer_with_notes, str)
+
+
+def test_book_questions_attr_if_it_has_not_article(book_without_article):
+    assert book_without_article.questions is None
+
+
+def test_book_pundit_attr_if_it_has_not_article(book_without_article):
+    assert book_without_article.pundit is None
+
+
+def test_book_sources_attr_if_it_has_not_article(book_without_article):
+    assert book_without_article.sources is None
 
 
 def test_pundit_loads_data(empty_pundit: polka.Pundit):

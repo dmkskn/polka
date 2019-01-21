@@ -213,8 +213,10 @@ class Book:
 
     @property
     def pundit(self):
-        pundit = self._getdata("pundit")
-        return Pundit(pundit["id"], rawdata=pundit) if pundit else pundit
+        if not self.has_article:
+            return None
+        data = self._getdata("pundit")
+        return Pundit(data["id"], rawdata=data)
 
     @property
     def year(self):
@@ -232,8 +234,10 @@ class Book:
         tuples). Each item has `question`, `answer`  and
         `answer_with_notes` attributes.
         """
+        if not self.has_article:
+            return None
         questions = []
-        for block in self._getdata("blocks"):
+        for block in self._getdata("blocks") or []:
             if block["type"] != "question_template":
                 continue
             question = _clean_text(block["question"].strip())
@@ -245,8 +249,10 @@ class Book:
 
     @property
     def sources(self):
+        if not self.has_article:
+            return None
         sources = self._getdata("list")
-        return [s["title"] for s in sources] if sources else sources
+        return [source["title"] for source in sources]
 
     @property
     def in_lists(self):
