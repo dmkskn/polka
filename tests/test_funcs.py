@@ -27,4 +27,5 @@ def test_search():
     assert isinstance(results, list)
     for result in results:
         assert isinstance(result, tuple)
+        assert isinstance(result, polka.SearchResult)
         assert isinstance(result[2], objects)

@@ -2,7 +2,7 @@
 import json
 import re
 from html import unescape
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Union
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
@@ -137,7 +137,8 @@ def search(query):
             Object = Compilation
         elif category == "experts":
             Object = Pundit
-        results.append((item["title"], description, Object(item["id"])))
+        result = SearchResult(item["title"], description, Object(item["id"]))
+        results.append(result)
     return results
 
 
@@ -407,3 +408,9 @@ class Question(NamedTuple):
     question: str
     answer: str
     answer_with_notes: str
+
+
+class SearchResult(NamedTuple):
+    title: str
+    description: str
+    object: Union[Book, Compilation, Pundit]
