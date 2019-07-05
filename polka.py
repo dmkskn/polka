@@ -139,9 +139,12 @@ def search(query):
             Object = Pundit
         else:
             # TODO: materials
-            pass
-        result = SearchResult(item["title"], description, Object(item["id"]))
-        results.append(result)
+            Object = None
+        if Object:
+            result = SearchResult(
+                item["title"], description, Object(item["id"])
+            )
+            results.append(result)
     return results
 
 
