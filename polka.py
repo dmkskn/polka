@@ -137,6 +137,9 @@ def search(query):
             Object = Compilation
         elif category == "experts":
             Object = Pundit
+        else:
+            # TODO: materials
+            pass
         result = SearchResult(item["title"], description, Object(item["id"]))
         results.append(result)
     return results
