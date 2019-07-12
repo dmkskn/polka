@@ -25,6 +25,8 @@ __all__ = [
     "Compilation",
 ]
 
+URL = "https://polka.academy/"
+
 _BASE = "https://api.polka.academy/"
 _BOOKS = f"{_BASE}books?"
 _POST = f"{_BASE}posts/{{post_id}}"
@@ -201,6 +203,10 @@ class Book:
         return self.rawdata.get(key)
 
     @property
+    def url(self):
+        return f"{URL}articles/{self.id}" if self.has_article else None
+
+    @property
     def importance(self):
         importance = self._getdata("importance")
         return float(importance) if importance is not None else None
@@ -312,6 +318,10 @@ class Pundit:
         return self.rawdata.get(key)
 
     @property
+    def url(self):
+        return f"{URL}experts/{self.id}"
+
+    @property
     def name(self):
         first = self._getdata("first").strip()
         last = self._getdata("last").strip()
@@ -365,6 +375,10 @@ class Compilation:
                 self.rawdata.update(rawlist(self.id))
             self._n_requests += 1
         return self.rawdata.get(key)
+
+    @property
+    def url(self):
+        return f"{URL}lists/{self.id}"
 
     @property
     def title(self):

@@ -72,6 +72,14 @@ def test_book_loads_data(empty_book: polka.Book):
     assert empty_book._n_requests == 2
 
 
+def test_book_url_attr(book: polka.Book):
+    assert book.url == f"https://polka.academy/articles/{book.id}"
+
+
+def test_book_url_attr_if_it_has_not_article(book_without_article: polka.Book):
+    assert book_without_article.url is None
+
+
 def test_book_title_attr(book: polka.Book):
     assert book.title == BOOK_TITLE
 
@@ -137,6 +145,10 @@ def test_pundit_loads_data(empty_pundit: polka.Pundit):
     assert empty_pundit._n_requests == 3
 
 
+def test_pundit_url_attr(pundit: polka.Pundit):
+    assert pundit.url == f"https://polka.academy/experts/{pundit.id}"
+
+
 def test_pundit_name_attr(pundit: polka.Pundit):
     assert isinstance(pundit.name, str)
 
@@ -171,6 +183,10 @@ def test_compilation_loads_data(empty_list: polka.Compilation):
     empty_list.max_year
     empty_list.min_year
     assert empty_list._n_requests == 2
+
+
+def test_compilation_url_attr(compilation: polka.Compilation):
+    assert compilation.url == f"https://polka.academy/lists/{compilation.id}"
 
 
 def test_compilation_title_attr(compilation: polka.Compilation):
