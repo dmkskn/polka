@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "polka"
-version = "2.4.0"
+version = "2.5.0"
 description = "A module provides access to the public Polka API. (https://polka.academy/)."
 authors = ["Dima Koskin <dmksknn@gmail.com>"]
 license = "MIT"
