@@ -33,3 +33,21 @@ def test_rawpunditposts():
 
 def test_rawpunditfavs():
     assert isinstance(polka.rawpunditfavs(312), dict)
+
+
+def test_rawmaterials():
+    rawmaterials = polka.rawmaterials()
+    assert isinstance(rawmaterials, dict)
+    assert rawmaterials["title"] == "Материалы"
+
+
+def test_rawpodcasts():
+    rawpodcasts = polka.rawpodcasts()
+    assert isinstance(rawpodcasts, dict)
+    assert rawpodcasts["title"] == "Материалы"
+
+
+def test_rawblogs():
+    rawblogs = polka.rawblogs()
+    assert isinstance(rawblogs, dict)
+    assert rawblogs["title"] == "Материалы"

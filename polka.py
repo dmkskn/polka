@@ -16,19 +16,30 @@ __all__ = [
     "rawpundits",
     "rawpunditposts",
     "rawpunditfavs",
+    "rawpodcast",
+    "rawpodcasts",
+    "rawblog",
+    "rawblogs",
     "books",
     "pundits",
     "lists",
     "search",
+    "podcasts",
+    "blogs",
     "Book",
     "Pundit",
     "Compilation",
+    "Podcast",
+    "Blog",
 ]
 
 URL = "https://polka.academy/"
 
 _BASE = "https://api.polka.academy/"
 _BOOKS = f"{_BASE}books?"
+_BLOGS = f"{_BASE}blogs?"
+_BLOG_POST = f"{_BASE}blogs/{{post_id}}"
+_PODCAST_POST = f"{_BASE}blogs/{{post_id}}"
 _POST = f"{_BASE}posts/{{post_id}}"
 _SEARCH = f"{_BASE}search?"
 _LISTS = f"{_BASE}compilations"
@@ -48,6 +59,7 @@ def __dir__():
 
 
 def _get(url, **params):
+    # TODO error handling
     response = urlopen(url + urlencode(params))
     response = response.read().decode("utf-8")
     return json.loads(response)
@@ -96,6 +108,33 @@ def rawpunditposts(pundit_id):
 
 def rawpunditfavs(pundit_id):
     return _get(_PEOPLE_FAVS.format(post_id=pundit_id))
+
+
+def rawmaterials(article_type="all"):
+    """Returns podcasts and blogs. Valid values for
+    `article_type` are "all" (default), "podcast" and "blog"."""
+    # "all" or "podcast" or "blog"
+    return _get(_BLOGS, **{"article_type": article_type})
+
+
+def rawpodcasts():
+    """Returns podcasts."""
+    return rawmaterials("podcast")
+
+
+def rawblogs():
+    """Returns blog posts."""
+    return rawmaterials("blog")
+
+
+def rawpodcast(podcast_id):
+    """Returns podcast by `podcast_id`."""
+    return _get(_PODCAST_POST.format(post_id=podcast_id))
+
+
+def rawblog(blog_id):
+    """Returns blog post by `blog_id`."""
+    return _get(_BLOG_POST.format(post_id=blog_id))
 
 
 def books(sort_column="rating", sort_direction="desc"):
@@ -148,6 +187,20 @@ def search(query):
             )
             results.append(result)
     return results
+
+
+def podcasts():
+    podcasts = []
+    for data in rawpodcasts()["items"]:
+        podcasts.append(Podcast(data["id"], rawdata=data))
+    return podcasts
+
+
+def blogs():
+    blogs = []
+    for data in rawblogs()["items"]:
+        blogs.append(Blog(data["id"], rawdata=data))
+    return blogs
 
 
 class Book:
@@ -434,3 +487,86 @@ class SearchResult(NamedTuple):
     title: str
     description: str
     object: Union[Book, Compilation, Pundit]
+
+
+class Podcast:
+    """Represents a podcast"""
+
+    def __init__(self, id: int, *, rawdata=None):
+        self.id = id
+        self.rawdata = rawdata if rawdata is not None else {}
+        self._n_requests = 0
+
+    def _getdata(self, key):
+        if key not in self.rawdata:
+            if key in ["short_desc"]:
+                podcasts = rawpodcasts()["items"]
+                data = [p for p in podcasts if p["id"] == self.id][0]
+                self.rawdata.update(data)
+            else:
+                self.rawdata.update(rawpodcast(self.id))
+            self._n_requests += 1
+        return self.rawdata.get(key)
+
+    @property
+    def url(self):
+        return f"{URL}materials/{self.id}"
+
+    @property
+    def title(self):
+        return _clean_text(self._getdata("title"))
+
+    @property
+    def short_description(self):
+        return self._getdata("short_desc")
+
+    @property
+    def lead(self):
+        return self._getdata("lead")
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(title={self.title!r})"
+
+    def __eq__(self, other):
+        if other.__class__ is self.__class__:
+            return self.id == other.id
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self.id, self.title))
+
+
+class Blog:
+    """Represents a blog post"""
+
+    def __init__(self, id: int, *, rawdata=None):
+        self.id = id
+        self.rawdata = rawdata if rawdata is not None else {}
+        self._n_requests = 0
+
+    def _getdata(self, key):
+        if key not in self.rawdata:
+            if key in ["short_desc"]:
+                blogs = rawblogs()["items"]
+                data = [b for b in blogs if b["id"] == self.id][0]
+                self.rawdata.update(data)
+            else:
+                self.rawdata.update(rawblog(self.id))
+            self._n_requests += 1
+        return self.rawdata.get(key)
+
+    @property
+    def url(self):
+        return f"{URL}materials/{self.id}"
+
+    @property
+    def title(self):
+        return _clean_text(self._getdata("title"))
+
+    @property
+    def short_description(self):
+        return self._getdata("short_desc")
+
+    @property
+    def lead(self):
+        return self._getdata("lead")

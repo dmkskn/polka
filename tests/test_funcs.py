@@ -29,3 +29,15 @@ def test_search():
         assert isinstance(result, tuple)
         assert isinstance(result, polka.SearchResult)
         assert isinstance(result[2], objects)
+
+
+def test_podcasts():
+    podcasts = polka.podcasts()
+    assert isinstance(podcasts, list)
+    assert isinstance(podcasts[0], polka.Podcast)
+
+
+def test_blogs():
+    blogs = polka.blogs()
+    assert isinstance(blogs, list)
+    assert isinstance(blogs[0], polka.Blog)

@@ -8,6 +8,8 @@ BOOK_TITLE = "Герой нашего времени"
 BOOK_AUTHORS = ["Михаил Лермонтов"]
 PUNDIT_ID = 312
 COMPILATION_ID = 85
+PODCAST_ID = 654
+BLOG_ID = 659
 
 
 @pytest.fixture(scope="module")
@@ -55,6 +57,34 @@ def compilation():
 @pytest.fixture
 def empty_list():
     return polka.Compilation(COMPILATION_ID)
+
+
+@pytest.fixture(scope="module")
+def podcast():
+    podcast = polka.Podcast(PODCAST_ID)
+    podcasts = polka.rawpodcasts()["items"]
+    podcast.rawdata.update([p for p in podcasts if p["id"] == PODCAST_ID][0])
+    podcast.rawdata.update(polka.rawpodcast(PODCAST_ID))
+    return podcast
+
+
+@pytest.fixture
+def empty_podcast():
+    return polka.Podcast(PODCAST_ID)
+
+
+@pytest.fixture(scope="module")
+def blog():
+    blog = polka.Blog(BLOG_ID)
+    blogs = polka.rawblogs()["items"]
+    blog.rawdata.update([b for b in blogs if b["id"] == BLOG_ID][0])
+    blog.rawdata.update(polka.rawblog(BLOG_ID))
+    return blog
+
+
+@pytest.fixture
+def empty_blog():
+    return polka.Blog(BLOG_ID)
 
 
 def test_book_loads_data(empty_book: polka.Book):
@@ -212,3 +242,51 @@ def test_compilation_min_year_attr(compilation: polka.Compilation):
 def test_compilation_books_attr(compilation: polka.Compilation):
     assert isinstance(compilation.books, list)
     assert isinstance(compilation.books[0], polka.Book)
+
+
+def test_podcast_loads_data(empty_podcast: polka.Podcast):
+    assert empty_podcast._n_requests == 0
+    empty_podcast.short_description
+    assert empty_podcast._n_requests == 1
+    empty_podcast.lead
+    assert empty_podcast._n_requests == 2
+
+
+def test_podcast_url_attr(podcast: polka.Podcast):
+    assert podcast.url == f"https://polka.academy/materials/{podcast.id}"
+
+
+def test_podcast_title_attr(podcast: polka.Podcast):
+    assert isinstance(podcast.title, str)
+
+
+def test_podcast_short_description_attr(podcast: polka.Podcast):
+    assert isinstance(podcast.short_description, str)
+
+
+def test_podcast_lead_attr(podcast: polka.Podcast):
+    assert isinstance(podcast.lead, str)
+
+
+def test_blog_loads_data(empty_blog: polka.Blog):
+    assert empty_blog._n_requests == 0
+    empty_blog.short_description
+    assert empty_blog._n_requests == 1
+    empty_blog.lead
+    assert empty_blog._n_requests == 2
+
+
+def test_blog_url_attr(blog: polka.Blog):
+    assert blog.url == f"https://polka.academy/materials/{blog.id}"
+
+
+def test_blog_title_attr(blog: polka.Blog):
+    assert isinstance(blog.title, str)
+
+
+def test_blog_short_description_attr(blog: polka.Blog):
+    assert isinstance(blog.short_description, str)
+
+
+def test_blog_lead_attr(blog: polka.Blog):
+    assert isinstance(blog.lead, str)
